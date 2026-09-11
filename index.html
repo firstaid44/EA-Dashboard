@@ -307,7 +307,10 @@ function decryptPkg(P,keys){var iv=b64(P.iv),ct=b64(P.ct),mac=b64(P.mac);var dat
 return crypto.subtle.verify("HMAC",keys.mac,mac,data).then(function(ok){if(!ok)throw new Error("bad-pass");return crypto.subtle.decrypt({name:"AES-CBC",iv:iv},keys.enc,ct)}).then(function(pt){
 if(!P.gz)return new Uint8Array(pt);if(!window.DecompressionStream)throw new Error("no-gzip");var ds=new DecompressionStream("gzip");var w=ds.writable.getWriter();w.write(new Uint8Array(pt));w.close();return new Response(ds.readable).arrayBuffer().then(function(b){return new Uint8Array(b)})
 }).then(function(u){return JSON.parse(new TextDecoder().decode(u))})}
-function fetchPkg(){return fetch(LIVE_FILE+"?t="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("http "+r.status);return r.json()})}
+function fetchPkg(){var base=LIVE_FILE.replace(/live\.enc$/,"");var slot=Math.floor(Date.now()/60000);
+var list=REMOTE?[base+"live-"+slot+".enc",base+"live-"+(slot-1)+".enc",base+"live-"+(slot-2)+".enc",LIVE_FILE]:[LIVE_FILE+"?t="+Date.now()];
+function tryAt(i){if(i>=list.length)return Promise.reject(new Error("http 404"));return fetch(list[i],{cache:"no-store"}).then(function(r){if(!r.ok){if(r.status===404&&i<list.length-1)return tryAt(i+1);throw new Error("http "+r.status)}return r.json()}).catch(function(e){if(i<list.length-1&&/Failed to fetch|NetworkError/.test(String(e)))return tryAt(i+1);throw e})}
+return tryAt(0)}
 function setMsg(t,bad){var m=document.getElementById("lgmsg");if(m){m.textContent=t||"";m.className=bad?"lgmsg bad":"lgmsg"}}
 function showLogin(on){var l=document.getElementById("login");if(l)l.style.display=on?"flex":"none"}
 function setStale(P){var el=document.getElementById("stale");if(!el||!P||!P.ts)return;var t=Date.parse(P.ts.replace(" ","T"));var m=isNaN(t)?0:Math.round((Date.now()-t)/60000);
