@@ -237,7 +237,7 @@ svg text{font-family:var(--ff)}</style>
 </nav>
 </div>
 <script>(function(){
-var POLL_MS=60000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true;
+var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true;
 var K="eadash3",ST={p:"sc-home",c:"BOTH",s:"ALL",o:{},m:{},sc:{}};
 try{var _p=JSON.parse(sessionStorage.getItem(K)||"{}");for(var _k in _p)ST[_k]=_p[_k]}catch(e){}
 var _h=(location.hash||"").replace("#","");if(/^sc-(home|sum|not|sys)$/.test(_h)){ST.p=_h;ST.sc={};ST.o={};ST.m={}}
@@ -307,7 +307,7 @@ function decryptPkg(P,keys){var iv=b64(P.iv),ct=b64(P.ct),mac=b64(P.mac);var dat
 return crypto.subtle.verify("HMAC",keys.mac,mac,data).then(function(ok){if(!ok)throw new Error("bad-pass");return crypto.subtle.decrypt({name:"AES-CBC",iv:iv},keys.enc,ct)}).then(function(pt){
 if(!P.gz)return new Uint8Array(pt);if(!window.DecompressionStream)throw new Error("no-gzip");var ds=new DecompressionStream("gzip");var w=ds.writable.getWriter();w.write(new Uint8Array(pt));w.close();return new Response(ds.readable).arrayBuffer().then(function(b){return new Uint8Array(b)})
 }).then(function(u){return JSON.parse(new TextDecoder().decode(u))})}
-function fetchPkg(){var base=LIVE_FILE.replace(/live\.enc$/,"");var slot=Math.floor(Date.now()/60000);
+function fetchPkg(){var base=LIVE_FILE.replace(/live\.enc$/,"");var slot=Math.floor(Date.now()/30000);
 var list=REMOTE?[base+"live-"+slot+".enc",base+"live-"+(slot-1)+".enc",base+"live-"+(slot-2)+".enc",LIVE_FILE]:[LIVE_FILE+"?t="+Date.now()];
 function tryAt(i){if(i>=list.length)return Promise.reject(new Error("http 404"));return fetch(list[i],{cache:"no-store"}).then(function(r){if(!r.ok){if(r.status===404&&i<list.length-1)return tryAt(i+1);throw new Error("http "+r.status)}return r.json()}).catch(function(e){if(i<list.length-1&&/Failed to fetch|NetworkError/.test(String(e)))return tryAt(i+1);throw e})}
 return tryAt(0)}
