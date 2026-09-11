@@ -31,7 +31,8 @@ body{margin:0;background:#080A12;color:var(--ink);
 .av{width:40px;height:40px;border-radius:50%;flex:none;
   background:linear-gradient(150deg,#BFE9FF,var(--acc));display:grid;place-items:center;
   font-weight:700;color:#0E1120;font-size:15px}
-.top .ttl{flex:1;font-size:17.5px;font-weight:600}
+.top .ttl{flex:1;font-size:17.5px;font-weight:600;line-height:1.15;min-width:0}
+.top .ttl .acc{font-size:11px;font-weight:500;color:var(--muted);margin-top:2px;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .iconbtn.spin{animation:spinr .8s linear infinite}
 @keyframes spinr{to{transform:rotate(360deg)}}
 #flash{position:fixed;top:64px;left:50%;transform:translate(-50%,-20px);opacity:0;background:var(--card2);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:13px;z-index:80;transition:all .25s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.5);white-space:nowrap}
@@ -50,6 +51,17 @@ h3.st:first-child{margin-top:8px}
 /* greeting + hero */
 .hi{font-size:23px;font-weight:700;margin:6px 0 2px}
 .hisub{font-size:13.5px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+.hisub.sm{font-size:11.5px;line-height:1.45;margin:6px 0 4px}
+.io.three{grid-template-columns:1fr 1.15fr 1fr;gap:8px}
+.io.three .iobox{padding:10px 10px}
+.io.three .iobox .kk{font-size:10px;letter-spacing:.05em;white-space:nowrap}
+.io.three .iobox .vv{font-size:16.5px}
+.io.three .iobox.mid{background:var(--card);border:1px solid var(--line)}
+.io.three .iobox.mid .vv{font-size:18px}
+.iobox.wide{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;margin-top:8px}
+.iobox.wide .vv{margin-top:0;font-size:16.5px}
+.lastlog{margin-top:8px;padding:8px 12px}
+.lastlog ul.lg li{padding:0;border:none;font-size:12.5px;line-height:1.45}
 .heroRow{display:flex;align-items:flex-end;gap:12px;margin-bottom:6px}
 .big{font-size:38px;font-weight:700;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}
 .big .cur{font-size:22px;font-weight:600;color:var(--muted);margin-right:3px;vertical-align:.3em}
@@ -227,7 +239,7 @@ svg text{font-family:var(--ff)}</style>
 <div class="lgmsg" id="lgmsg"></div>
 </form></div>
 <div class="phone">
-<div class="top"><div class="av">KO</div><div class="ttl" id="pgname">Home</div>
+<div class="top"><div class="av">KO</div><div class="ttl"><div id="pgname">Home</div><div class="acc">XAUUSD &middot; บัญชี 11348233</div></div>
 <button class="iconbtn" id="lockbtn" type="button" title="ออกจากระบบ" style="margin-right:6px">&#128274;</button>
 <button class="iconbtn" id="refbtn" type="button" title="รีเฟรชข้อมูล" style="margin-right:6px">&#8635;</button>
 <button class="iconbtn" id="sndbtn" type="button" title="เสียงเตือน">&#128276;</button></div>
@@ -242,7 +254,7 @@ svg text{font-family:var(--ff)}</style>
 </nav>
 </div>
 <script>(function(){
-var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true;
+var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="5efbd51ee25950f445cbb68a34e04f192f239f65";
 var K="eadash3",ST={p:"sc-home",c:"BOTH",s:"ALL",o:{},m:{},sc:{}};
 try{var _p=JSON.parse(sessionStorage.getItem(K)||"{}");for(var _k in _p)ST[_k]=_p[_k]}catch(e){}
 var _h=(location.hash||"").replace("#","");if(/^sc-(home|sum|not|sys)$/.test(_h)){ST.p=_h;ST.sc={};ST.o={};ST.m={}}
@@ -322,7 +334,7 @@ function setStale(P){var el=document.getElementById("stale");if(!el||!P||!P.ts)r
 el.textContent=(m>=3)?("ข้อมูลเก่า "+m+" นาที"):"";el.style.display=(m>=3)?"":"none"}
 function pollRemote(done){if(!PASS||BUSY){if(done)done();return}BUSY=true;var P;fetchPkg().then(function(pk){P=pk;if(P.ts===lastTs)throw {skip:1};
 if(KEYS&&KEYS.salt===P.salt&&KEYS.iter===P.iter)return KEYS;return deriveKeys(PASS,P.salt,P.iter).then(function(k){KEYS=k;return k})
-}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");applyLive(D);setStale(P)
+}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="5efbd51ee25950f445cbb68a34e04f192f239f65"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}applyLive(D);setStale(P)
 }).catch(function(e){if(e&&e.skip){setStale(P);return}var msg=String(e&&e.message||e);
 if(msg==="bad-pass"){PASS=null;KEYS=null;try{localStorage.removeItem("ea_pass")}catch(x){}showLogin(true);setMsg("รหัสผ่านไม่ถูกต้อง",true)}
 else if(msg==="no-gzip"){showLogin(true);setMsg("เบราว์เซอร์นี้เก่าเกินไป (ไม่รองรับ DecompressionStream) กรุณาอัปเดต",true)}
