@@ -33,8 +33,12 @@ body{margin:0;background:#080A12;color:var(--ink);
   font-weight:700;color:#0E1120;font-size:15px}
 .top .ttl{flex:1;font-size:17.5px;font-weight:600;line-height:1.15;min-width:0}
 .top .ttl .acc{font-size:11px;font-weight:500;color:var(--muted);margin-top:2px;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.conn{margin:0 18px 8px;padding:4px 10px;border-radius:9px;font-size:11.5px;line-height:1.35;display:flex;align-items:center;gap:7px;color:var(--muted)}
-.conn:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted);flex:none}
+.top .ttl .acc2{margin-top:1px;font-variant-numeric:tabular-nums}.top .ttl .acc2 b{color:var(--ink);font-weight:600}
+.sys{display:inline-block;margin-left:5px;padding:0 7px;border-radius:99px;font-size:10px;font-weight:600;line-height:16px;vertical-align:1px}
+.sys.ok{background:rgba(18,196,106,.15);color:var(--good)}.sys.lock{background:rgba(240,66,78,.18);color:#FF7A84}
+.conn{margin:0 18px 10px;padding:5px 10px;border-radius:9px;font-size:11.5px;line-height:1.35;display:grid;grid-template-columns:auto 1fr;column-gap:7px;align-items:center;color:var(--muted)}
+.conn:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted);grid-row:1}
+#connst{grid-column:2}#conninfo{grid-column:2;font-size:11px;font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}#conninfo:empty{display:none}
 .conn.ok{color:var(--good)}.conn.ok:before{background:var(--good);animation:pulse 1.8s ease-out infinite;color:rgba(18,196,106,.45)}
 .conn.slow{background:rgba(255,194,77,.12);color:var(--warn)}.conn.slow:before{background:var(--warn)}
 .conn.lost{background:rgba(240,66,78,.14);color:#FF7A84;font-weight:600}.conn.lost:before{background:var(--bad);animation:blink 1s ease-in-out infinite}
@@ -87,6 +91,7 @@ h3.st:first-child{margin-top:8px}
 .ea{display:inline-block;font-size:11.5px;padding:2px 9px;border-radius:99px;font-weight:600;white-space:nowrap;
   background:var(--card3);color:var(--ink2)}
 .ea-s{background:rgba(74,140,255,.18);color:var(--ea1)}
+.ea-s1{background:rgba(156,228,252,.16);color:var(--cyan)}
 .ea-g{background:rgba(217,89,38,.22);color:var(--ea2l)}
 .muted{color:var(--muted)}
 .empty{color:var(--muted);font-size:14px;padding:10px 0;text-align:center}
@@ -250,11 +255,11 @@ svg text{font-family:var(--ff)}</style>
 <div class="lgmsg" id="lgmsg"></div>
 </form></div>
 <div class="phone">
-<div class="top"><div class="av">KO</div><div class="ttl"><div id="pgname">Home</div><div class="acc">XAUUSD &middot; บัญชี 11348233</div></div>
+<div class="top"><div class="av">KO</div><div class="ttl"><div id="pgname">Home</div><div class="acc">XAUUSD &middot; บัญชี 11348233 <span class="sys lock" title="สถานะระบบ: ล็อก/หยุดเทรด">&#128274; LOCK</span></div><div class="acc acc2"></div></div>
 <button class="iconbtn" id="lockbtn" type="button" title="ออกจากระบบ" style="margin-right:6px">&#128274;</button>
 <button class="iconbtn" id="refbtn" type="button" title="รีเฟรชข้อมูล" style="margin-right:6px">&#8635;</button>
 <button class="iconbtn" id="sndbtn" type="button" title="เสียงเตือน">&#128276;</button></div>
-<div id="conn" class="conn wait">กำลังรอข้อมูล...</div>
+<div id="conn" class="conn wait"><span id="connst">กำลังรอข้อมูล...</span><span id="conninfo"></span></div>
 <div class="screen on" id="sc-home" data-name="Home"><div class="hi">EA Dashboard</div><div class="hisub">กำลังโหลดข้อมูลล่าสุดจาก GitHub...</div></div>
 <div class="screen" id="sc-sum" data-name="Summaries"></div><div class="screen" id="sc-not" data-name="Notify"></div><div class="screen" id="sc-sys" data-name="ระบบ"></div>
 <div class="toasts"></div>
@@ -266,7 +271,7 @@ svg text{font-family:var(--ff)}</style>
 </nav>
 </div>
 <script>(function(){
-var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="02706149ad060dadf212275b924536ecc8c4cacb";
+var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="e58d5ec9c931b560a99c66d46c53ed70e79265da";
 var K="eadash3",ST={p:"sc-home",c:"BOTH",s:"ALL",o:{},m:{},sc:{}};
 try{var _p=JSON.parse(sessionStorage.getItem(K)||"{}");for(var _k in _p)ST[_k]=_p[_k]}catch(e){}
 var _h=(location.hash||"").replace("#","");if(/^sc-(home|sum|not|sys)$/.test(_h)){ST.p=_h;ST.sc={};ST.o={};ST.m={}}
@@ -278,9 +283,9 @@ function goPage(id,scrollTop){ST.p=id;qa(".screen").forEach(function(el){el.clas
 qa(".nv").forEach(function(b){b.className=(b.getAttribute("data-go")===id)?"nv on":"nv"});
 var cur=document.getElementById(id);var t=document.getElementById("pgname");
 if(cur&&t)t.textContent=cur.getAttribute("data-name");save();if(scrollTop)setY(0)}
-function applyC(){qa(".ctab").forEach(function(b){b.className=(b.getAttribute("data-c")===ST.c)?"tab ctab on":"tab ctab"});
+function applyC(){if(ST.c!=="BOTH"&&!document.querySelector(".ctab[data-c=\""+ST.c+"\"]"))ST.c="BOTH";qa(".ctab").forEach(function(b){b.className=(b.getAttribute("data-c")===ST.c)?"tab ctab on":"tab ctab"});
 qa("g.ser").forEach(function(g){var s=g.getAttribute("data-s");g.style.display=(ST.c==="BOTH"||ST.c===s)?"":"none"})}
-function applyS(){qa(".stab").forEach(function(b){b.className=(b.getAttribute("data-s")===ST.s)?"tab stab on":"tab stab"});
+function applyS(){if(ST.s!=="ALL"&&!document.querySelector(".stab[data-s=\""+ST.s+"\"]"))ST.s="ALL";qa(".stab").forEach(function(b){b.className=(b.getAttribute("data-s")===ST.s)?"tab stab on":"tab stab"});
 qa(".gset").forEach(function(g){g.style.display=(g.getAttribute("data-g")===ST.s)?"":"none"});
 var n=0;qa(".hrow").forEach(function(r){var ok=(ST.s==="ALL"||r.getAttribute("data-ea")===ST.s);
 r.style.display=ok?"":"none";if(ok)n++});
@@ -336,7 +341,7 @@ else if(CONN.err){cls="off";txt=(REMOTE?"มือถือโหลดข้อ
 else if(age<lim){cls="ok";txt="ออนไลน์ · อัปเดต "+fmtAge(age)+"ที่แล้ว"}
 else if(age<180){cls="slow";txt="ล่าช้า · ไม่ได้รับข้อมูลใหม่มา "+fmtAge(age)}
 else{cls="lost";txt="ขาดการเชื่อมต่อ "+fmtAge(age)+" — ตัวสร้างหยุด / คอมดับ / เน็ตคอมหลุด"}
-if(el.className!=="conn "+cls)el.className="conn "+cls;if(el.textContent!==txt)el.textContent=txt}
+if(el.className!=="conn "+cls)el.className="conn "+cls;var st=document.getElementById("connst")||el;if(st.textContent!==txt)st.textContent=txt}
 setInterval(paintConn,1000);
 var lastTs="";function pollLocal(){var s=document.createElement("script");s.src=LIVE_FILE+"?"+Date.now();
 s.onload=function(){s.parentNode.removeChild(s);var D=window.__EADASH;if(D){noteData(D)}if(D&&D.ts!==lastTs){lastTs=D.ts;applyLive(D)}paintConn()};
@@ -360,7 +365,7 @@ function setStale(P){var el=document.getElementById("stale");if(!el||!P||!P.ts)r
 el.textContent="";el.style.display="none"}
 function pollRemote(done){if(!PASS||BUSY){if(done)done();return}BUSY=true;var P;fetchPkg().then(function(pk){P=pk;if(P.ts===lastTs)throw {skip:1};
 if(KEYS&&KEYS.salt===P.salt&&KEYS.iter===P.iter)return KEYS;return deriveKeys(PASS,P.salt,P.iter).then(function(k){KEYS=k;return k})
-}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="02706149ad060dadf212275b924536ecc8c4cacb"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
+}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="e58d5ec9c931b560a99c66d46c53ed70e79265da"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
 }).catch(function(e){if(e&&e.skip){CONN.err="";setStale(P);paintConn();return}var msg=String(e&&e.message||e);if(msg!=="bad-pass"&&msg!=="no-gzip")noteErr(msg);paintConn();
 if(msg==="bad-pass"){PASS=null;KEYS=null;try{localStorage.removeItem("ea_pass")}catch(x){}showLogin(true);setMsg("รหัสผ่านไม่ถูกต้อง",true)}
 else if(msg==="no-gzip"){showLogin(true);setMsg("เบราว์เซอร์นี้เก่าเกินไป (ไม่รองรับ DecompressionStream) กรุณาอัปเดต",true)}
