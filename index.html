@@ -36,12 +36,13 @@ body{margin:0;background:#080A12;color:var(--ink);
 .top .ttl .acc2{margin-top:1px;font-variant-numeric:tabular-nums}.top .ttl .acc2 b{color:var(--ink);font-weight:600}
 .sys{display:inline-block;margin-left:5px;padding:0 7px;border-radius:99px;font-size:10px;font-weight:600;line-height:16px;vertical-align:1px}
 .sys.ok{background:rgba(18,196,106,.15);color:var(--good)}.sys.lock{background:rgba(240,66,78,.18);color:#FF7A84}
-.top .ttl .conn{margin-top:1px;display:flex;align-items:center;gap:6px;color:var(--muted)}
+.top .ttl .conn{margin-top:1px;display:flex;align-items:center;gap:6px;color:var(--muted);min-width:0}
+.top .ttl .conn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .top .ttl .conn:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted);flex:none}
-.conn[data-st=ok]{color:var(--good)}.conn[data-st=ok]:before{background:var(--good);animation:pulse 1.8s ease-out infinite;color:rgba(18,196,106,.45)}
-.conn[data-st=slow]{color:var(--warn)}.conn[data-st=slow]:before{background:var(--warn)}
-.conn[data-st=lost]{color:#FF7A84;font-weight:600}.conn[data-st=lost]:before{background:var(--bad);animation:blink 1s ease-in-out infinite}
-.conn[data-st=off]{color:var(--serious);font-weight:600}.conn[data-st=off]:before{background:var(--serious);animation:blink 1s ease-in-out infinite}
+.top .ttl .conn[data-st=ok]{color:var(--good)}.top .ttl .conn[data-st=ok]:before{background:var(--good);animation:pulse 1.8s ease-out infinite;color:rgba(18,196,106,.45)}
+.top .ttl .conn[data-st=slow]{color:var(--warn)}.top .ttl .conn[data-st=slow]:before{background:var(--warn)}
+.top .ttl .conn[data-st=lost]{color:#FF7A84;font-weight:600}.top .ttl .conn[data-st=lost]:before{background:var(--bad);animation:blink 1s ease-in-out infinite}
+.top .ttl .conn[data-st=off]{color:var(--serious);font-weight:600}.top .ttl .conn[data-st=off]:before{background:var(--serious);animation:blink 1s ease-in-out infinite}
 .dayinfo{margin:0 18px 6px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;line-height:1.45}
 .conn.ok{color:var(--good)}.conn.ok:before{background:var(--good);animation:pulse 1.8s ease-out infinite;color:rgba(18,196,106,.45)}
 .conn.slow{background:rgba(255,194,77,.12);color:var(--warn)}.conn.slow:before{background:var(--warn)}
@@ -259,7 +260,7 @@ svg text{font-family:var(--ff)}</style>
 <div class="lgmsg" id="lgmsg"></div>
 </form></div>
 <div class="phone">
-<div class="top"><div class="av">KO</div><div class="ttl"><div id="pgname">Home</div><div class="acc">บัญชี 11348233 <span class="sys lock" title="สถานะระบบ: ล็อก/หยุดเทรด">&#128274; LOCK</span></div><div class="acc conn" id="conn" data-st="wait"><span id="connst">กำลังรอข้อมูล...</span></div></div>
+<div class="top"><div class="av">KO</div><div class="ttl"><div id="pgname">Home</div><div class="acc">บัญชี 11348233 <span class="sys ok" title="สถานะระบบ: ปกติ">&#9679; ปกติ</span></div><div class="acc conn" id="conn" data-st="wait"><span id="connst">กำลังรอข้อมูล...</span></div></div>
 <button class="iconbtn" id="lockbtn" type="button" title="ออกจากระบบ" style="margin-right:6px">&#128274;</button>
 <button class="iconbtn" id="refbtn" type="button" title="รีเฟรชข้อมูล" style="margin-right:6px">&#8635;</button>
 <button class="iconbtn" id="sndbtn" type="button" title="เสียงเตือน">&#128276;</button></div>
@@ -275,7 +276,7 @@ svg text{font-family:var(--ff)}</style>
 </nav>
 </div>
 <script>(function(){
-var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="6d4673d3ad43aac06c4510f26505ea7ef339aab9";
+var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="97e50b6daa1277b58dcb5552dd3b9d641cf79fcf";
 var K="eadash3",ST={p:"sc-home",c:"BOTH",s:"ALL",o:{},m:{},sc:{}};
 try{var _p=JSON.parse(sessionStorage.getItem(K)||"{}");for(var _k in _p)ST[_k]=_p[_k]}catch(e){}
 var _h=(location.hash||"").replace("#","");if(/^sc-(home|sum|not|sys)$/.test(_h)){ST.p=_h;ST.sc={};ST.o={};ST.m={}}
@@ -339,12 +340,12 @@ function noteData(D){var m=tsToMs(D&&D.ts);if(!m)return;if(m!==CONN.tsMs){if(CON
 function noteErr(e){CONN.err=String(e&&e.message||e||"error")}
 function fmtAge(s){if(s<60)return Math.round(s)+" วิ";if(s<3600)return Math.floor(s/60)+" นาที";return (s/3600).toFixed(1)+" ชม."}
 function paintConn(){var el=document.getElementById("conn");if(!el)return;var age=CONN.tsMs?Math.max(0,(Date.now()-CONN.lastNewAt)/1000):null;var lim=REMOTE?Math.max(90,POLL_MS/1000*3):Math.max(20,POLL_MS/1000*4);var cls,txt;
-if(CONN.stopped){cls="lost";txt="ตัวสร้างบนคอมถูกปิดเมื่อ "+CONN.stopped.substr(11,5)+" (START-DASHBOARD หยุดทำงาน) — ข้อมูลไม่อัปเดต"}
+if(CONN.stopped){cls="lost";txt="ตัวสร้างถูกปิดเมื่อ "+CONN.stopped.substr(11,5)+" · ข้อมูลไม่อัปเดต"}
 else if(age===null){if(CONN.err){cls="off";txt="โหลดข้อมูลไม่ได้: "+CONN.err}else{cls="wait";txt="กำลังรอข้อมูล..."}}
-else if(CONN.err){cls="off";txt=(REMOTE?"มือถือโหลดข้อมูลไม่ได้ (เน็ตมือถือ/GitHub)":"อ่าน live.js ไม่ได้")+" · ข้อมูลล่าสุด "+fmtAge(age)+"ที่แล้ว"}
-else if(age<lim){cls="ok";txt="ออนไลน์ · อัปเดต "+fmtAge(age)+"ที่แล้ว"}
-else if(age<180){cls="slow";txt="ล่าช้า · ไม่ได้รับข้อมูลใหม่มา "+fmtAge(age)}
-else{cls="lost";txt="ขาดการเชื่อมต่อ "+fmtAge(age)+" — ตัวสร้างหยุด / คอมดับ / เน็ตคอมหลุด"}
+else if(CONN.err){cls="off";txt=(REMOTE?"โหลดไม่ได้ (เน็ตมือถือ/GitHub)":"อ่าน live.js ไม่ได้")+" · ล่าสุด "+fmtAge(age)+"ที่แล้ว"}
+else if(age<lim){cls="ok";txt="ออนไลน์ · อัปเดต "+fmtAge(age)}
+else if(age<180){cls="slow";txt="ล่าช้า · ไม่มีข้อมูลใหม่ "+fmtAge(age)}
+else{cls="lost";txt="ขาดการเชื่อมต่อ "+fmtAge(age)+" (ตัวสร้างหยุด/คอมดับ/เน็ตหลุด)"}
 if(el.getAttribute("data-st")!==cls)el.setAttribute("data-st",cls);var st=document.getElementById("connst")||el;if(st.textContent!==txt)st.textContent=txt}
 setInterval(paintConn,1000);
 var lastTs="";function pollLocal(){var s=document.createElement("script");s.src=LIVE_FILE+"?"+Date.now();
@@ -369,7 +370,7 @@ function setStale(P){var el=document.getElementById("stale");if(!el||!P||!P.ts)r
 el.textContent="";el.style.display="none"}
 function pollRemote(done){if(!PASS||BUSY){if(done)done();return}BUSY=true;var P;fetchPkg().then(function(pk){P=pk;if(P.ts===lastTs)throw {skip:1};
 if(KEYS&&KEYS.salt===P.salt&&KEYS.iter===P.iter)return KEYS;return deriveKeys(PASS,P.salt,P.iter).then(function(k){KEYS=k;return k})
-}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="6d4673d3ad43aac06c4510f26505ea7ef339aab9"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
+}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="97e50b6daa1277b58dcb5552dd3b9d641cf79fcf"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
 }).catch(function(e){if(e&&e.skip){CONN.err="";setStale(P);paintConn();return}var msg=String(e&&e.message||e);if(msg!=="bad-pass"&&msg!=="no-gzip")noteErr(msg);paintConn();
 if(msg==="bad-pass"){PASS=null;KEYS=null;try{localStorage.removeItem("ea_pass")}catch(x){}showLogin(true);setMsg("รหัสผ่านไม่ถูกต้อง",true)}
 else if(msg==="no-gzip"){showLogin(true);setMsg("เบราว์เซอร์นี้เก่าเกินไป (ไม่รองรับ DecompressionStream) กรุณาอัปเดต",true)}
