@@ -255,7 +255,7 @@ svg text{font-family:var(--ff)}</style>
 <div class="lgmsg" id="lgmsg"></div>
 </form></div>
 <div class="phone">
-<div class="top"><div class="av">KO</div><div class="ttl"><div id="pgname">Home</div><div class="acc">XAUUSD &middot; บัญชี 11348233 <span class="sys ok" title="สถานะระบบ: ปกติ">&#9679; ปกติ</span></div><div class="acc acc2"></div></div>
+<div class="top"><div class="av">KO</div><div class="ttl"><div id="pgname">Home</div><div class="acc">XAUUSD &middot; บัญชี 11348233 <span class="sys lock" title="สถานะระบบ: ล็อก/หยุดเทรด">&#128274; LOCK</span></div><div class="acc acc2"></div></div>
 <button class="iconbtn" id="lockbtn" type="button" title="ออกจากระบบ" style="margin-right:6px">&#128274;</button>
 <button class="iconbtn" id="refbtn" type="button" title="รีเฟรชข้อมูล" style="margin-right:6px">&#8635;</button>
 <button class="iconbtn" id="sndbtn" type="button" title="เสียงเตือน">&#128276;</button></div>
@@ -271,7 +271,7 @@ svg text{font-family:var(--ff)}</style>
 </nav>
 </div>
 <script>(function(){
-var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="ead00b1d4284632667d7d1faf0531b83ecec9d1e";
+var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="e58d5ec9c931b560a99c66d46c53ed70e79265da";
 var K="eadash3",ST={p:"sc-home",c:"BOTH",s:"ALL",o:{},m:{},sc:{}};
 try{var _p=JSON.parse(sessionStorage.getItem(K)||"{}");for(var _k in _p)ST[_k]=_p[_k]}catch(e){}
 var _h=(location.hash||"").replace("#","");if(/^sc-(home|sum|not|sys)$/.test(_h)){ST.p=_h;ST.sc={};ST.o={};ST.m={}}
@@ -365,7 +365,7 @@ function setStale(P){var el=document.getElementById("stale");if(!el||!P||!P.ts)r
 el.textContent="";el.style.display="none"}
 function pollRemote(done){if(!PASS||BUSY){if(done)done();return}BUSY=true;var P;fetchPkg().then(function(pk){P=pk;if(P.ts===lastTs)throw {skip:1};
 if(KEYS&&KEYS.salt===P.salt&&KEYS.iter===P.iter)return KEYS;return deriveKeys(PASS,P.salt,P.iter).then(function(k){KEYS=k;return k})
-}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="ead00b1d4284632667d7d1faf0531b83ecec9d1e"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
+}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="e58d5ec9c931b560a99c66d46c53ed70e79265da"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
 }).catch(function(e){if(e&&e.skip){CONN.err="";setStale(P);paintConn();return}var msg=String(e&&e.message||e);if(msg!=="bad-pass"&&msg!=="no-gzip")noteErr(msg);paintConn();
 if(msg==="bad-pass"){PASS=null;KEYS=null;try{localStorage.removeItem("ea_pass")}catch(x){}showLogin(true);setMsg("รหัสผ่านไม่ถูกต้อง",true)}
 else if(msg==="no-gzip"){showLogin(true);setMsg("เบราว์เซอร์นี้เก่าเกินไป (ไม่รองรับ DecompressionStream) กรุณาอัปเดต",true)}
