@@ -33,6 +33,12 @@ body{margin:0;background:#080A12;color:var(--ink);
   font-weight:700;color:#0E1120;font-size:15px}
 .top .ttl{flex:1;font-size:17.5px;font-weight:600;line-height:1.15;min-width:0}
 .top .ttl .acc{font-size:11px;font-weight:500;color:var(--muted);margin-top:2px;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conn{margin:0 18px 8px;padding:4px 10px;border-radius:9px;font-size:11.5px;line-height:1.35;display:flex;align-items:center;gap:7px;color:var(--muted)}
+.conn:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted);flex:none}
+.conn.ok{color:var(--good)}.conn.ok:before{background:var(--good);animation:pulse 1.8s ease-out infinite;color:rgba(18,196,106,.45)}
+.conn.slow{background:rgba(255,194,77,.12);color:var(--warn)}.conn.slow:before{background:var(--warn)}
+.conn.lost{background:rgba(240,66,78,.14);color:#FF7A84;font-weight:600}.conn.lost:before{background:var(--bad);animation:blink 1s ease-in-out infinite}
+.conn.off{background:rgba(255,138,91,.14);color:var(--serious);font-weight:600}.conn.off:before{background:var(--serious);animation:blink 1s ease-in-out infinite}
 .iconbtn.spin{animation:spinr .8s linear infinite}
 @keyframes spinr{to{transform:rotate(360deg)}}
 #flash{position:fixed;top:64px;left:50%;transform:translate(-50%,-20px);opacity:0;background:var(--card2);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:13px;z-index:80;transition:all .25s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.5);white-space:nowrap}
@@ -248,6 +254,7 @@ svg text{font-family:var(--ff)}</style>
 <button class="iconbtn" id="lockbtn" type="button" title="ออกจากระบบ" style="margin-right:6px">&#128274;</button>
 <button class="iconbtn" id="refbtn" type="button" title="รีเฟรชข้อมูล" style="margin-right:6px">&#8635;</button>
 <button class="iconbtn" id="sndbtn" type="button" title="เสียงเตือน">&#128276;</button></div>
+<div id="conn" class="conn wait">กำลังรอข้อมูล...</div>
 <div class="screen on" id="sc-home" data-name="Home"><div class="hi">EA Dashboard</div><div class="hisub">กำลังโหลดข้อมูลล่าสุดจาก GitHub...</div></div>
 <div class="screen" id="sc-sum" data-name="Summaries"></div><div class="screen" id="sc-not" data-name="Notify"></div><div class="screen" id="sc-sys" data-name="ระบบ"></div>
 <div class="toasts"></div>
@@ -259,7 +266,7 @@ svg text{font-family:var(--ff)}</style>
 </nav>
 </div>
 <script>(function(){
-var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="d801d8fa1b27a02f4c2f46e9923cf6d4db870d97";
+var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="02706149ad060dadf212275b924536ecc8c4cacb";
 var K="eadash3",ST={p:"sc-home",c:"BOTH",s:"ALL",o:{},m:{},sc:{}};
 try{var _p=JSON.parse(sessionStorage.getItem(K)||"{}");for(var _k in _p)ST[_k]=_p[_k]}catch(e){}
 var _h=(location.hash||"").replace("#","");if(/^sc-(home|sum|not|sys)$/.test(_h)){ST.p=_h;ST.sc={};ST.o={};ST.m={}}
@@ -317,9 +324,23 @@ ROOT=document.querySelector(".phone");PREV=next;
 if(D.title)document.title=D.title;
 if(REMOTE){var tb=document.querySelector(".top");if(tb&&!document.getElementById("lockbtn")){var lb=document.createElement("button");lb.className="iconbtn";lb.id="lockbtn";lb.type="button";lb.title="ออกจากระบบ";lb.style.marginRight="6px";lb.innerHTML="&#128274;";var sb=document.getElementById("sndbtn");if(sb)tb.insertBefore(lb,sb);else tb.appendChild(lb)}}
 applyAll();try{setY(sy)}catch(e){}playAlerts(D.alerts||[])}
+var CONN={tsMs:0,lastNewAt:0,err:"",stopped:null};
+function tsToMs(ts){var t=Date.parse(String(ts||"").replace(" ","T"));return isNaN(t)?0:t}
+function noteData(D){var m=tsToMs(D&&D.ts);if(!m)return;if(m!==CONN.tsMs){if(CONN.tsMs===0){var sk=Date.now()-m;CONN.lastNewAt=(sk>120000)?(Date.now()-(sk-120000)):Date.now()}else{CONN.lastNewAt=Date.now()}CONN.tsMs=m}CONN.err="";CONN.stopped=(D&&D.stopped)?String(D.stopped):null}
+function noteErr(e){CONN.err=String(e&&e.message||e||"error")}
+function fmtAge(s){if(s<60)return Math.round(s)+" วิ";if(s<3600)return Math.floor(s/60)+" นาที";return (s/3600).toFixed(1)+" ชม."}
+function paintConn(){var el=document.getElementById("conn");if(!el)return;var age=CONN.tsMs?Math.max(0,(Date.now()-CONN.lastNewAt)/1000):null;var lim=REMOTE?Math.max(90,POLL_MS/1000*3):Math.max(20,POLL_MS/1000*4);var cls,txt;
+if(CONN.stopped){cls="lost";txt="ตัวสร้างบนคอมถูกปิดเมื่อ "+CONN.stopped.substr(11,5)+" (START-DASHBOARD หยุดทำงาน) — ข้อมูลไม่อัปเดต"}
+else if(age===null){if(CONN.err){cls="off";txt="โหลดข้อมูลไม่ได้: "+CONN.err}else{cls="wait";txt="กำลังรอข้อมูล..."}}
+else if(CONN.err){cls="off";txt=(REMOTE?"มือถือโหลดข้อมูลไม่ได้ (เน็ตมือถือ/GitHub)":"อ่าน live.js ไม่ได้")+" · ข้อมูลล่าสุด "+fmtAge(age)+"ที่แล้ว"}
+else if(age<lim){cls="ok";txt="ออนไลน์ · อัปเดต "+fmtAge(age)+"ที่แล้ว"}
+else if(age<180){cls="slow";txt="ล่าช้า · ไม่ได้รับข้อมูลใหม่มา "+fmtAge(age)}
+else{cls="lost";txt="ขาดการเชื่อมต่อ "+fmtAge(age)+" — ตัวสร้างหยุด / คอมดับ / เน็ตคอมหลุด"}
+if(el.className!=="conn "+cls)el.className="conn "+cls;if(el.textContent!==txt)el.textContent=txt}
+setInterval(paintConn,1000);
 var lastTs="";function pollLocal(){var s=document.createElement("script");s.src=LIVE_FILE+"?"+Date.now();
-s.onload=function(){s.parentNode.removeChild(s);var D=window.__EADASH;if(D&&D.ts!==lastTs){lastTs=D.ts;applyLive(D)}};
-s.onerror=function(){s.parentNode.removeChild(s)};document.head.appendChild(s)}
+s.onload=function(){s.parentNode.removeChild(s);var D=window.__EADASH;if(D){noteData(D)}if(D&&D.ts!==lastTs){lastTs=D.ts;applyLive(D)}paintConn()};
+s.onerror=function(){s.parentNode.removeChild(s);noteErr("live.js");paintConn()};document.head.appendChild(s)}
 var PASS=null,KEYS=null,BUSY=false;try{PASS=localStorage.getItem("ea_pass")}catch(e){}
 function b64(s){var b=atob(s),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
 function deriveKeys(pass,saltB64,iter){var te=new TextEncoder();return crypto.subtle.importKey("raw",te.encode(pass),"PBKDF2",false,["deriveBits"]).then(function(base){
@@ -336,11 +357,11 @@ return tryAt(0)}
 function setMsg(t,bad){var m=document.getElementById("lgmsg");if(m){m.textContent=t||"";m.className=bad?"lgmsg bad":"lgmsg"}}
 function showLogin(on){var l=document.getElementById("login");if(l)l.style.display=on?"flex":"none"}
 function setStale(P){var el=document.getElementById("stale");if(!el||!P||!P.ts)return;var t=Date.parse(P.ts.replace(" ","T"));var m=isNaN(t)?0:Math.round((Date.now()-t)/60000);
-el.textContent=(m>=3)?("ข้อมูลเก่า "+m+" นาที"):"";el.style.display=(m>=3)?"":"none"}
+el.textContent="";el.style.display="none"}
 function pollRemote(done){if(!PASS||BUSY){if(done)done();return}BUSY=true;var P;fetchPkg().then(function(pk){P=pk;if(P.ts===lastTs)throw {skip:1};
 if(KEYS&&KEYS.salt===P.salt&&KEYS.iter===P.iter)return KEYS;return deriveKeys(PASS,P.salt,P.iter).then(function(k){KEYS=k;return k})
-}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="d801d8fa1b27a02f4c2f46e9923cf6d4db870d97"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}applyLive(D);setStale(P)
-}).catch(function(e){if(e&&e.skip){setStale(P);return}var msg=String(e&&e.message||e);
+}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="02706149ad060dadf212275b924536ecc8c4cacb"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
+}).catch(function(e){if(e&&e.skip){CONN.err="";setStale(P);paintConn();return}var msg=String(e&&e.message||e);if(msg!=="bad-pass"&&msg!=="no-gzip")noteErr(msg);paintConn();
 if(msg==="bad-pass"){PASS=null;KEYS=null;try{localStorage.removeItem("ea_pass")}catch(x){}showLogin(true);setMsg("รหัสผ่านไม่ถูกต้อง",true)}
 else if(msg==="no-gzip"){showLogin(true);setMsg("เบราว์เซอร์นี้เก่าเกินไป (ไม่รองรับ DecompressionStream) กรุณาอัปเดต",true)}
 else{setMsg("โหลดข้อมูลไม่ได้: "+msg,true);flash("โหลดข้อมูลไม่ได้: "+msg)}}).then(function(){BUSY=false;if(done)done()})}
