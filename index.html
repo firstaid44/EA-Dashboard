@@ -101,6 +101,7 @@ h3.st .agec.q{color:var(--warn)}
   background:var(--card3);color:var(--ink2)}
 .ea-s{background:rgba(74,140,255,.18);color:var(--ea1)}
 .ea-s1{background:rgba(156,228,252,.16);color:var(--cyan)}
+.ea-s15{background:rgba(240,180,41,.18);color:#F0B429}
 .ea-g{background:rgba(217,89,38,.22);color:var(--ea2l)}
 .muted{color:var(--muted)}
 .empty{color:var(--muted);font-size:14px;padding:10px 0;text-align:center}
@@ -285,7 +286,7 @@ svg text{font-family:var(--ff)}</style>
 </nav>
 </div>
 <script>(function(){
-var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="d2c817ca41e88089eca097861e59de141d18947f";
+var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="4af99528d6646013393d9ea1524c5facbd93704a";
 var K="eadash3",ST={p:"sc-home",c:"BOTH",s:"ALL",o:{},m:{},sc:{}};
 try{var _p=JSON.parse(sessionStorage.getItem(K)||"{}");for(var _k in _p)ST[_k]=_p[_k]}catch(e){}
 var _h=(location.hash||"").replace("#","");if(/^sc-(home|sum|not|sys)$/.test(_h)){ST.p=_h;ST.sc={};ST.o={};ST.m={}}
@@ -379,7 +380,7 @@ function setStale(P){var el=document.getElementById("stale");if(!el||!P||!P.ts)r
 el.textContent="";el.style.display="none"}
 function pollRemote(done){if(!PASS||BUSY){if(done)done();return}BUSY=true;var P;fetchPkg().then(function(pk){P=pk;if(P.ts===lastTs)throw {skip:1};
 if(KEYS&&KEYS.salt===P.salt&&KEYS.iter===P.iter)return KEYS;return deriveKeys(PASS,P.salt,P.iter).then(function(k){KEYS=k;return k})
-}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="d2c817ca41e88089eca097861e59de141d18947f"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
+}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="4af99528d6646013393d9ea1524c5facbd93704a"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
 }).catch(function(e){if(e&&e.skip){CONN.err="";setStale(P);paintConn();return}var msg=String(e&&e.message||e);if(msg!=="bad-pass"&&msg!=="no-gzip")noteErr(msg);paintConn();
 if(msg==="bad-pass"){PASS=null;KEYS=null;try{localStorage.removeItem("ea_pass")}catch(x){}showLogin(true);setMsg("รหัสผ่านไม่ถูกต้อง",true)}
 else if(msg==="no-gzip"){showLogin(true);setMsg("เบราว์เซอร์นี้เก่าเกินไป (ไม่รองรับ DecompressionStream) กรุณาอัปเดต",true)}
