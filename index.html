@@ -65,6 +65,24 @@ h3.st .agec{margin-left:8px;font-size:11px;font-weight:500;letter-spacing:.02em;
   text-transform:none;color:var(--ink2)}
 h3.st .agec.q{color:var(--warn)}
 .whyq{font-size:11.5px;color:var(--muted);line-height:1.55;margin:-2px 0 8px}
+/* v7.9.4 แผงคะแนนสด */
+.scr{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.scr:last-child{margin-bottom:0}
+.sct{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.scsym{font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+.scnum{margin-left:auto;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.scnum.up{color:var(--good)}.scnum.dn{color:var(--bad)}.scnum.nt{color:var(--ink2)}
+.scbar{position:relative;height:6px;border-radius:99px;background:var(--card3);margin:9px 0 7px;overflow:hidden}
+.scbar i{position:absolute;top:0;bottom:0;border-radius:99px}
+.scbar i.up{background:var(--good)}.scbar i.dn{background:var(--bad)}
+.scbar u{position:absolute;top:0;bottom:0;width:2px;background:var(--muted);opacity:.6}
+.scbar u.mid{background:var(--ink2);opacity:.45}
+.scm{font-size:11.5px;color:var(--ink2);line-height:1.65}
+.scm b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.scm .w{color:var(--warn);font-weight:600}
+.scm .g{color:var(--good);font-weight:600}
+.scd{font-size:11px;color:var(--muted);line-height:1.55;margin-top:5px;word-break:break-word}
+.scold{color:var(--warn)}
 .pgttl{text-align:center;font-size:22px;font-weight:700;letter-spacing:.16em;margin:2px 0 16px}
 
 /* greeting + hero */
@@ -286,7 +304,7 @@ svg text{font-family:var(--ff)}</style>
 </nav>
 </div>
 <script>(function(){
-var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="4af99528d6646013393d9ea1524c5facbd93704a";
+var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="cfd1e6b023ce2c9e95754aa61ba8a36f4011b4d7";
 var K="eadash3",ST={p:"sc-home",c:"BOTH",s:"ALL",o:{},m:{},sc:{}};
 try{var _p=JSON.parse(sessionStorage.getItem(K)||"{}");for(var _k in _p)ST[_k]=_p[_k]}catch(e){}
 var _h=(location.hash||"").replace("#","");if(/^sc-(home|sum|not|sys)$/.test(_h)){ST.p=_h;ST.sc={};ST.o={};ST.m={}}
@@ -380,7 +398,7 @@ function setStale(P){var el=document.getElementById("stale");if(!el||!P||!P.ts)r
 el.textContent="";el.style.display="none"}
 function pollRemote(done){if(!PASS||BUSY){if(done)done();return}BUSY=true;var P;fetchPkg().then(function(pk){P=pk;if(P.ts===lastTs)throw {skip:1};
 if(KEYS&&KEYS.salt===P.salt&&KEYS.iter===P.iter)return KEYS;return deriveKeys(PASS,P.salt,P.iter).then(function(k){KEYS=k;return k})
-}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="4af99528d6646013393d9ea1524c5facbd93704a"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
+}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="cfd1e6b023ce2c9e95754aa61ba8a36f4011b4d7"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
 }).catch(function(e){if(e&&e.skip){CONN.err="";setStale(P);paintConn();return}var msg=String(e&&e.message||e);if(msg!=="bad-pass"&&msg!=="no-gzip")noteErr(msg);paintConn();
 if(msg==="bad-pass"){PASS=null;KEYS=null;try{localStorage.removeItem("ea_pass")}catch(x){}showLogin(true);setMsg("รหัสผ่านไม่ถูกต้อง",true)}
 else if(msg==="no-gzip"){showLogin(true);setMsg("เบราว์เซอร์นี้เก่าเกินไป (ไม่รองรับ DecompressionStream) กรุณาอัปเดต",true)}
