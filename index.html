@@ -83,6 +83,21 @@ h3.st .agec.q{color:var(--warn)}
 .scm .g{color:var(--good);font-weight:600}
 .scd{font-size:11px;color:var(--muted);line-height:1.55;margin-top:5px;word-break:break-word}
 .scold{color:var(--warn)}
+/* v7.9.6 Limit ที่ตั้งวันนี้ */
+.lmsum{display:flex;gap:14px;font-size:12px;color:var(--muted);margin:0 0 8px;flex-wrap:wrap}
+.lmsum b{color:var(--ink);font-weight:600}.lmsum b.g{color:var(--good)}.lmsum b.w{color:var(--warn)}.lmsum b.x{color:var(--bad)}
+.lm{background:var(--card3);border:1px solid var(--line);border-radius:12px;padding:7px 11px;margin-bottom:6px}
+.lm:last-child{margin-bottom:0}
+.lmh{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:12px}
+.lmh .t{color:var(--muted);font-variant-numeric:tabular-nums}
+.lmh .d{font-weight:700}.lmh .d.b{color:var(--acc2)}.lmh .d.s{color:var(--bad)}
+.lmh .stt{margin-left:auto;font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--card2);color:var(--ink2);white-space:nowrap}
+.lmh .stt.f{background:rgba(18,196,106,.18);color:var(--good)}
+.lmh .stt.w{background:rgba(255,194,77,.18);color:var(--warn)}
+.lmh .stt.x{background:rgba(240,66,78,.16);color:var(--bad)}
+.lmr{font-size:11.5px;color:var(--ink2);line-height:1.6;margin-top:2px}
+.lmr b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.lmr .neg{color:var(--bad)}.lmr .pos{color:var(--good)}.lmr .k{font-size:11px}
 .pgttl{text-align:center;font-size:22px;font-weight:700;letter-spacing:.16em;margin:2px 0 16px}
 
 /* greeting + hero */
@@ -305,7 +320,7 @@ svg text{font-family:var(--ff)}</style>
 </nav>
 </div>
 <script>(function(){
-var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="78b511e9526dac77fe2a1fb520b945f81a2b2af0";
+var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="de2871e5cbff61ffd828fe023673449aedbd7538";
 var K="eadash3",ST={p:"sc-home",c:"BOTH",s:"ALL",o:{},m:{},sc:{}};
 try{var _p=JSON.parse(sessionStorage.getItem(K)||"{}");for(var _k in _p)ST[_k]=_p[_k]}catch(e){}
 var _h=(location.hash||"").replace("#","");if(/^sc-(home|sum|not|sys)$/.test(_h)){ST.p=_h;ST.sc={};ST.o={};ST.m={}}
@@ -399,7 +414,7 @@ function setStale(P){var el=document.getElementById("stale");if(!el||!P||!P.ts)r
 el.textContent="";el.style.display="none"}
 function pollRemote(done){if(!PASS||BUSY){if(done)done();return}BUSY=true;var P;fetchPkg().then(function(pk){P=pk;if(P.ts===lastTs)throw {skip:1};
 if(KEYS&&KEYS.salt===P.salt&&KEYS.iter===P.iter)return KEYS;return deriveKeys(PASS,P.salt,P.iter).then(function(k){KEYS=k;return k})
-}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="78b511e9526dac77fe2a1fb520b945f81a2b2af0"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
+}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="de2871e5cbff61ffd828fe023673449aedbd7538"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
 }).catch(function(e){if(e&&e.skip){CONN.err="";setStale(P);paintConn();return}var msg=String(e&&e.message||e);if(msg!=="bad-pass"&&msg!=="no-gzip")noteErr(msg);paintConn();
 if(msg==="bad-pass"){PASS=null;KEYS=null;try{localStorage.removeItem("ea_pass")}catch(x){}showLogin(true);setMsg("รหัสผ่านไม่ถูกต้อง",true)}
 else if(msg==="no-gzip"){showLogin(true);setMsg("เบราว์เซอร์นี้เก่าเกินไป (ไม่รองรับ DecompressionStream) กรุณาอัปเดต",true)}
