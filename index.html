@@ -99,14 +99,14 @@ h3.st .agec.q{color:var(--warn)}
 .iobox.wide .vv{margin-top:0;font-size:16.5px}
 .lastlog{margin-top:8px;padding:8px 12px}
 /* v7.10 ชิปคะแนนแนวนอน */
-.scrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.scchip{display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 8px;font-size:11.5px;line-height:1;flex:1 1 auto;justify-content:center}
-.scchip .nm{font-weight:600}
+.scrow{display:flex;gap:5px;flex-wrap:nowrap;margin-top:10px;overflow:hidden}
+.scchip{display:flex;align-items:center;gap:4px;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:3px 6px 3px 3px;font-size:10.5px;line-height:1;flex:1 1 auto;min-width:0;justify-content:center;white-space:nowrap}
+.scchip .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;font-size:10px;padding:2px 6px}
 .scchip .tf{color:var(--muted);font-size:10.5px}
-.scchip .sv{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.scchip .sv{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .scchip .sv.up{color:var(--good)}.scchip .sv.dn{color:var(--bad)}.scchip .sv.nt{color:var(--ink2)}
-.scchip .nd{color:var(--muted);font-size:10px}
-.scchip .mb{position:relative;width:34px;height:4px;border-radius:99px;background:var(--card3);overflow:hidden}
+.scchip .nd{color:var(--muted);font-size:9.5px}
+.scchip .mb{position:relative;width:24px;flex:none;height:4px;border-radius:99px;background:var(--card3);overflow:hidden}
 .scchip .mb i{position:absolute;top:0;bottom:0;border-radius:99px}
 .scchip .mb i.up{background:var(--good)}.scchip .mb i.dn{background:var(--bad)}
 .scchip.old{opacity:.55}
@@ -335,7 +335,7 @@ svg text{font-family:var(--ff)}</style>
 </nav>
 </div>
 <script>(function(){
-var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="a9e162703eddcd168af5dcf5c643c11abe84d592",CMD_PORT=8765;
+var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="a07a0c5f353859a840b97ee07080d3092a73143a",CMD_PORT=8765;
 var K="eadash3",ST={p:"sc-home",c:"BOTH",s:"ALL",o:{},m:{},sc:{}};
 try{var _p=JSON.parse(sessionStorage.getItem(K)||"{}");for(var _k in _p)ST[_k]=_p[_k]}catch(e){}
 var _h=(location.hash||"").replace("#","");if(/^sc-(home|sum|not|sys)$/.test(_h)){ST.p=_h;ST.sc={};ST.o={};ST.m={}}
@@ -437,7 +437,7 @@ function setStale(P){var el=document.getElementById("stale");if(!el||!P||!P.ts)r
 el.textContent="";el.style.display="none"}
 function pollRemote(done){if(!PASS||BUSY){if(done)done();return}BUSY=true;var P;fetchPkg().then(function(pk){P=pk;if(P.ts===lastTs)throw {skip:1};
 if(KEYS&&KEYS.salt===P.salt&&KEYS.iter===P.iter)return KEYS;return deriveKeys(PASS,P.salt,P.iter).then(function(k){KEYS=k;return k})
-}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="a9e162703eddcd168af5dcf5c643c11abe84d592"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
+}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="a07a0c5f353859a840b97ee07080d3092a73143a"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
 }).catch(function(e){if(e&&e.skip){CONN.err="";setStale(P);paintConn();return}var msg=String(e&&e.message||e);if(msg!=="bad-pass"&&msg!=="no-gzip")noteErr(msg);paintConn();
 if(msg==="bad-pass"){PASS=null;KEYS=null;try{localStorage.removeItem("ea_pass")}catch(x){}showLogin(true);setMsg("รหัสผ่านไม่ถูกต้อง",true)}
 else if(msg==="no-gzip"){showLogin(true);setMsg("เบราว์เซอร์นี้เก่าเกินไป (ไม่รองรับ DecompressionStream) กรุณาอัปเดต",true)}
