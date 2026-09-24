@@ -98,6 +98,36 @@ h3.st .agec.q{color:var(--warn)}
 .iobox.wide{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;margin-top:8px}
 .iobox.wide .vv{margin-top:0;font-size:16.5px}
 .lastlog{margin-top:8px;padding:8px 12px}
+/* v7.10 ชิปคะแนนแนวนอน */
+.scrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.scchip{display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 8px;font-size:11.5px;line-height:1;flex:1 1 auto;justify-content:center}
+.scchip .nm{font-weight:600}
+.scchip .tf{color:var(--muted);font-size:10.5px}
+.scchip .sv{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.scchip .sv.up{color:var(--good)}.scchip .sv.dn{color:var(--bad)}.scchip .sv.nt{color:var(--ink2)}
+.scchip .nd{color:var(--muted);font-size:10px}
+.scchip .mb{position:relative;width:34px;height:4px;border-radius:99px;background:var(--card3);overflow:hidden}
+.scchip .mb i{position:absolute;top:0;bottom:0;border-radius:99px}
+.scchip .mb i.up{background:var(--good)}.scchip .mb i.dn{background:var(--bad)}
+.scchip.old{opacity:.55}
+/* v7.10 แผงคำสั่ง EA */
+.cmdrow{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.cmdrow:last-child{border-bottom:none}
+.cmdrow .nm{font-weight:600;font-size:13px;min-width:0;flex:1 1 auto}
+.cmdrow .nm small{display:block;font-weight:400;font-size:10.5px;color:var(--muted);margin-top:2px}
+.badge{font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.badge.on{background:rgba(52,199,89,.15);color:var(--good)}
+.badge.off{background:rgba(255,69,58,.15);color:var(--bad)}
+.badge.wait{background:rgba(255,159,10,.15);color:var(--warn)}
+.badge.dead{background:rgba(255,255,255,.06);color:var(--muted)}
+.cmdbtn{border:1px solid var(--line);background:var(--card3);color:var(--ink);font:inherit;font-size:11.5px;font-weight:600;padding:6px 10px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.cmdbtn.stop{border-color:rgba(255,69,58,.5);color:var(--bad)}
+.cmdbtn.go{border-color:rgba(52,199,89,.5);color:var(--good)}
+.cmdbtn:disabled{opacity:.4;cursor:default}
+.cmdall{display:flex;gap:8px;margin-top:8px}
+.cmdall .cmdbtn{flex:1 1 auto}
+.cmdnote{font-size:10.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+#cmdtoast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--card);border:1px solid var(--line);color:var(--ink);padding:8px 14px;border-radius:12px;font-size:12.5px;z-index:300;display:none;box-shadow:0 6px 24px rgba(0,0,0,.4)}
 .lastlog ul.lg li{padding:0;border:none;font-size:12.5px;line-height:1.45}
 .heroRow{display:flex;align-items:flex-end;gap:12px;margin-bottom:4px}
 .big{font-size:38px;font-weight:700;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}
@@ -210,7 +240,7 @@ h3.st .agec.q{color:var(--warn)}
 .lg .tm{color:var(--muted);flex:none;font-variant-numeric:tabular-nums}
 .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-top:6px;flex:none}
 .s-critical{background:var(--bad)} .s-serious{background:var(--serious)}
-.s-warning{background:var(--warn)} .s-good{background:var(--good)} .s-info{background:var(--muted)}
+.s-warning{background:var(--warn)} .s-good{background:var(--good)} .s-info{background:var(--muted)} .s-none,.s-beat{background:var(--muted);opacity:.5}
 .more{font:inherit;font-size:13px;cursor:pointer;background:var(--card2);color:var(--ink2);
   border:1px solid var(--line);border-radius:10px;padding:7px 14px;margin-top:10px;width:100%}
 
@@ -305,7 +335,7 @@ svg text{font-family:var(--ff)}</style>
 </nav>
 </div>
 <script>(function(){
-var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="78b511e9526dac77fe2a1fb520b945f81a2b2af0";
+var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="a9e162703eddcd168af5dcf5c643c11abe84d592",CMD_PORT=8765;
 var K="eadash3",ST={p:"sc-home",c:"BOTH",s:"ALL",o:{},m:{},sc:{}};
 try{var _p=JSON.parse(sessionStorage.getItem(K)||"{}");for(var _k in _p)ST[_k]=_p[_k]}catch(e){}
 var _h=(location.hash||"").replace("#","");if(/^sc-(home|sum|not|sys)$/.test(_h)){ST.p=_h;ST.sc={};ST.o={};ST.m={}}
@@ -335,6 +365,7 @@ document.addEventListener("click",function(ev){var t=ev.target;
 function up(sel){var n=t;while(n&&n!==document){if(n.matches&&n.matches(sel))return n;n=n.parentNode}return null}
 var b;
 if((b=up(".nv"))){goPage(b.getAttribute("data-go"),true);return}
+if((b=up("[data-cmd]"))){sendCmd(b.getAttribute("data-cmd"),b.getAttribute("data-trade"),b);return}
 if((b=up(".ctab"))){ST.c=b.getAttribute("data-c");save();applyC();return}
 if((b=up(".stab"))){ST.s=b.getAttribute("data-s");save();applyS();return}
 if((b=up("[data-more]"))){var id=b.getAttribute("data-more");ST.m[id]=ST.m[id]?0:1;save();applyM();return}
@@ -362,7 +393,14 @@ try{morph(ROOT,PREV,next)}catch(e){ROOT.parentNode.replaceChild(next.cloneNode(t
 ROOT=document.querySelector(".phone");PREV=next;
 if(D.title)document.title=D.title;
 if(REMOTE){var tb=document.querySelector(".top");if(tb&&!document.getElementById("lockbtn")){var lb=document.createElement("button");lb.className="iconbtn";lb.id="lockbtn";lb.type="button";lb.title="ออกจากระบบ";lb.style.marginRight="6px";lb.innerHTML="&#128274;";var sb=document.getElementById("sndbtn");if(sb)tb.insertBefore(lb,sb);else tb.appendChild(lb)}}
+if(REMOTE||!CMD_PORT){qa(".cmdbtn").forEach(function(b){b.style.display="none"})}
 applyAll();try{setY(sy)}catch(e){}playAlerts(D.alerts||[])}
+function toast(t,bad){var el=document.getElementById("cmdtoast");if(!el){el=document.createElement("div");el.id="cmdtoast";document.body.appendChild(el)}el.textContent=t;el.style.color=bad?"var(--bad)":"var(--ink)";el.style.display="block";clearTimeout(el._t);el._t=setTimeout(function(){el.style.display="none"},3500)}
+function sendCmd(mg,tr,btn){if(REMOTE||!CMD_PORT){toast("กดได้เฉพาะหน้า Dashboard บนคอม",true);return}
+var lbl=(tr==="0")?"หยุดเปิดไม้ใหม่":"เปิดเทรด";if(mg==="all"&&!confirm((tr==="0"?"หยุดเปิดไม้ใหม่":"เปิดเทรด")+" ทุก EA?"))return;
+if(btn)btn.disabled=true;fetch("http://127.0.0.1:"+CMD_PORT+"/cmd?magic="+encodeURIComponent(mg)+"&trade="+encodeURIComponent(tr)+"&t="+Date.now(),{cache:"no-store"})
+.then(function(r){return r.json()}).then(function(j){if(j&&j.ok){toast("ส่งคำสั่ง "+lbl+" แล้ว ("+(j.written||[]).join(", ")+") รอ EA รับทราบ...")}else{toast("ส่งไม่สำเร็จ: "+((j&&j.error)||"?"),true)}})
+.catch(function(e){toast("ติดต่อตัวรับคำสั่งไม่ได้ - ตัวสร้าง Dashboard เปิดอยู่ไหม? ("+e+")",true)}).then(function(){if(btn)btn.disabled=false})}
 var CONN={tsMs:0,lastNewAt:0,err:"",stopped:null};
 function tsToMs(ts){var t=Date.parse(String(ts||"").replace(" ","T"));return isNaN(t)?0:t}
 function noteData(D){var m=tsToMs(D&&D.ts);if(!m)return;if(m!==CONN.tsMs){if(CONN.tsMs===0){var sk=Date.now()-m;CONN.lastNewAt=(sk>120000)?(Date.now()-(sk-120000)):Date.now()}else{CONN.lastNewAt=Date.now()}CONN.tsMs=m}CONN.err="";CONN.stopped=(D&&D.stopped)?String(D.stopped):null}
@@ -399,7 +437,7 @@ function setStale(P){var el=document.getElementById("stale");if(!el||!P||!P.ts)r
 el.textContent="";el.style.display="none"}
 function pollRemote(done){if(!PASS||BUSY){if(done)done();return}BUSY=true;var P;fetchPkg().then(function(pk){P=pk;if(P.ts===lastTs)throw {skip:1};
 if(KEYS&&KEYS.salt===P.salt&&KEYS.iter===P.iter)return KEYS;return deriveKeys(PASS,P.salt,P.iter).then(function(k){KEYS=k;return k})
-}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="78b511e9526dac77fe2a1fb520b945f81a2b2af0"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
+}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="a9e162703eddcd168af5dcf5c643c11abe84d592"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
 }).catch(function(e){if(e&&e.skip){CONN.err="";setStale(P);paintConn();return}var msg=String(e&&e.message||e);if(msg!=="bad-pass"&&msg!=="no-gzip")noteErr(msg);paintConn();
 if(msg==="bad-pass"){PASS=null;KEYS=null;try{localStorage.removeItem("ea_pass")}catch(x){}showLogin(true);setMsg("รหัสผ่านไม่ถูกต้อง",true)}
 else if(msg==="no-gzip"){showLogin(true);setMsg("เบราว์เซอร์นี้เก่าเกินไป (ไม่รองรับ DecompressionStream) กรุณาอัปเดต",true)}
