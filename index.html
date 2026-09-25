@@ -335,7 +335,7 @@ svg text{font-family:var(--ff)}</style>
 </nav>
 </div>
 <script>(function(){
-var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="a07a0c5f353859a840b97ee07080d3092a73143a",CMD_PORT=8765;
+var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="33a7d9c4720fd708ea501ddabdb6e31d5a2ae959",CMD_PORT=8765;
 var K="eadash3",ST={p:"sc-home",c:"BOTH",s:"ALL",o:{},m:{},sc:{}};
 try{var _p=JSON.parse(sessionStorage.getItem(K)||"{}");for(var _k in _p)ST[_k]=_p[_k]}catch(e){}
 var _h=(location.hash||"").replace("#","");if(/^sc-(home|sum|not|sys)$/.test(_h)){ST.p=_h;ST.sc={};ST.o={};ST.m={}}
@@ -366,6 +366,7 @@ function up(sel){var n=t;while(n&&n!==document){if(n.matches&&n.matches(sel))ret
 var b;
 if((b=up(".nv"))){goPage(b.getAttribute("data-go"),true);return}
 if((b=up("[data-cmd]"))){sendCmd(b.getAttribute("data-cmd"),b.getAttribute("data-trade"),b);return}
+if((b=up("[data-token]"))){sendToken(b.getAttribute("data-token"),b);return}
 if((b=up(".ctab"))){ST.c=b.getAttribute("data-c");save();applyC();return}
 if((b=up(".stab"))){ST.s=b.getAttribute("data-s");save();applyS();return}
 if((b=up("[data-more]"))){var id=b.getAttribute("data-more");ST.m[id]=ST.m[id]?0:1;save();applyM();return}
@@ -393,10 +394,26 @@ try{morph(ROOT,PREV,next)}catch(e){ROOT.parentNode.replaceChild(next.cloneNode(t
 ROOT=document.querySelector(".phone");PREV=next;
 if(D.title)document.title=D.title;
 if(REMOTE){var tb=document.querySelector(".top");if(tb&&!document.getElementById("lockbtn")){var lb=document.createElement("button");lb.className="iconbtn";lb.id="lockbtn";lb.type="button";lb.title="ออกจากระบบ";lb.style.marginRight="6px";lb.innerHTML="&#128274;";var sb=document.getElementById("sndbtn");if(sb)tb.insertBefore(lb,sb);else tb.appendChild(lb)}}
-if(REMOTE||!CMD_PORT){qa(".cmdbtn").forEach(function(b){b.style.display="none"})}
+if(D.cmdtok){CMDR={tok:D.cmdtok,repo:D.cmdrepo,br:D.cmdbranch||"cmd",ack:D.cmdack||""};var sent="";try{sent=localStorage.getItem("ea_cmd_sent")||""}catch(e){}if(sent&&sent===CMDR.ack){try{localStorage.removeItem("ea_cmd_sent")}catch(e){}toast("คอมรับคำสั่งจากมือถือแล้ว")}}
+var canCmd=REMOTE?!!CMDR:!!CMD_PORT;if(!canCmd){qa(".cmdbtn").forEach(function(b){b.style.display="none"})}
+var mb=document.getElementById("mobcmd");if(mb){var mh=mb.previousElementSibling;if(REMOTE||!CMD_PORT){mb.style.display="none";if(mh)mh.style.display="none"}}
+if(REMOTE&&CMDR){var cn=document.querySelector(".cmdnote");if(cn)cn.textContent="มือถือ: คำสั่งส่งผ่าน GitHub คอมอ่านทุก ~15 วิ แล้วสั่ง EA (รวมดีเลย์ ~15-45 วิ) · หยุด = ไม่เปิดไม้ใหม่ + ยกเลิก Limit ค้าง ไม้ที่ถือปล่อยถึง SL/TP"}
 applyAll();try{setY(sy)}catch(e){}playAlerts(D.alerts||[])}
 function toast(t,bad){var el=document.getElementById("cmdtoast");if(!el){el=document.createElement("div");el.id="cmdtoast";document.body.appendChild(el)}el.textContent=t;el.style.color=bad?"var(--bad)":"var(--ink)";el.style.display="block";clearTimeout(el._t);el._t=setTimeout(function(){el.style.display="none"},3500)}
-function sendCmd(mg,tr,btn){if(REMOTE||!CMD_PORT){toast("กดได้เฉพาะหน้า Dashboard บนคอม",true);return}
+var CMDR=null;
+function sendToken(act,btn){if(REMOTE||!CMD_PORT)return;var body;if(act==="clear"){if(!confirm("ปิดการสั่งจากมือถือ และลบ token ออกจากคอม?"))return;body="clear=1"}else{var el=document.getElementById("tokin");var v=el?el.value.trim():"";if(!v){toast("ยังไม่ได้วาง token",true);return}body="token="+encodeURIComponent(v)}
+if(btn)btn.disabled=true;fetch("http://127.0.0.1:"+CMD_PORT+"/settoken",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:body})
+.then(function(r){return r.json()}).then(function(j){if(j&&j.ok){toast(act==="clear"?"ลบ token แล้ว - ปิดการสั่งจากมือถือ":"บันทึก token แล้ว - เปิดช่องคำสั่งจากมือถือใน ~10 วิ");var el=document.getElementById("tokin");if(el)el.value=""}else{toast("ไม่สำเร็จ: "+((j&&j.error)||"?"),true)}})
+.catch(function(e){toast("ติดต่อตัวรับคำสั่งไม่ได้ ("+e+")",true)}).then(function(){if(btn)btn.disabled=false})}
+function b64u(s){return btoa(unescape(encodeURIComponent(s)))}
+function ghSendCmd(mg,tr,btn,lbl){var id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);var body={id:id,magic:mg,trade:parseInt(tr,10),at:new Date().toISOString()};
+var url="https://api.github.com/repos/"+CMDR.repo+"/contents/cmd.json";var H={Authorization:"Bearer "+CMDR.tok,Accept:"application/vnd.github+json","Content-Type":"application/json","X-GitHub-Api-Version":"2022-11-28"};
+if(btn)btn.disabled=true;fetch(url+"?ref="+CMDR.br+"&t="+Date.now(),{headers:H,cache:"no-store"}).then(function(r){if(r.ok)return r.json();if(r.status===404)return null;throw new Error("http "+r.status)})
+.then(function(cur){var pl={message:"cmd "+id,branch:CMDR.br,content:b64u(JSON.stringify(body))};if(cur&&cur.sha)pl.sha=cur.sha;return fetch(url,{method:"PUT",headers:H,body:JSON.stringify(pl)})})
+.then(function(r){if(!r.ok)throw new Error("http "+r.status);try{localStorage.setItem("ea_cmd_sent",id)}catch(e){}toast("ส่งคำสั่ง "+lbl+" ขึ้น GitHub แล้ว - คอมจะรับใน ~15-45 วิ")})
+.catch(function(e){toast("ส่งไม่สำเร็จ: "+e+" (token หมดอายุ/สิทธิ์ไม่พอ?)",true)}).then(function(){if(btn)btn.disabled=false})}
+function sendCmd(mg,tr,btn){var lbl0=(tr==="0")?"หยุดเปิดไม้ใหม่":"เปิดเทรด";if(REMOTE){if(!CMDR){toast("มือถือยังสั่งไม่ได้ - คอมยังไม่ได้ตั้ง dash-cmdtoken.txt",true);return}if(mg==="all"&&!confirm(lbl0+" ทุก EA?"))return;ghSendCmd(mg,tr,btn,lbl0);return}
+if(!CMD_PORT){toast("ตัวรับคำสั่งปิดอยู่",true);return}
 var lbl=(tr==="0")?"หยุดเปิดไม้ใหม่":"เปิดเทรด";if(mg==="all"&&!confirm((tr==="0"?"หยุดเปิดไม้ใหม่":"เปิดเทรด")+" ทุก EA?"))return;
 if(btn)btn.disabled=true;fetch("http://127.0.0.1:"+CMD_PORT+"/cmd?magic="+encodeURIComponent(mg)+"&trade="+encodeURIComponent(tr)+"&t="+Date.now(),{cache:"no-store"})
 .then(function(r){return r.json()}).then(function(j){if(j&&j.ok){toast("ส่งคำสั่ง "+lbl+" แล้ว ("+(j.written||[]).join(", ")+") รอ EA รับทราบ...")}else{toast("ส่งไม่สำเร็จ: "+((j&&j.error)||"?"),true)}})
@@ -437,7 +454,7 @@ function setStale(P){var el=document.getElementById("stale");if(!el||!P||!P.ts)r
 el.textContent="";el.style.display="none"}
 function pollRemote(done){if(!PASS||BUSY){if(done)done();return}BUSY=true;var P;fetchPkg().then(function(pk){P=pk;if(P.ts===lastTs)throw {skip:1};
 if(KEYS&&KEYS.salt===P.salt&&KEYS.iter===P.iter)return KEYS;return deriveKeys(PASS,P.salt,P.iter).then(function(k){KEYS=k;return k})
-}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="a07a0c5f353859a840b97ee07080d3092a73143a"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
+}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="33a7d9c4720fd708ea501ddabdb6e31d5a2ae959"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
 }).catch(function(e){if(e&&e.skip){CONN.err="";setStale(P);paintConn();return}var msg=String(e&&e.message||e);if(msg!=="bad-pass"&&msg!=="no-gzip")noteErr(msg);paintConn();
 if(msg==="bad-pass"){PASS=null;KEYS=null;try{localStorage.removeItem("ea_pass")}catch(x){}showLogin(true);setMsg("รหัสผ่านไม่ถูกต้อง",true)}
 else if(msg==="no-gzip"){showLogin(true);setMsg("เบราว์เซอร์นี้เก่าเกินไป (ไม่รองรับ DecompressionStream) กรุณาอัปเดต",true)}
