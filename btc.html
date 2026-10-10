@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BTC กำไรลอย</title>
+<style>
+:root{--bg:#0f1115;--card:#171a21;--tx:#e8e8ea;--mut:#8b90a0;--up:#2ecc71;--dn:#ff5c5c;--line:#2a2f3a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 "Segoe UI",system-ui,sans-serif;padding:16px}
+h1{font-size:18px;margin:0 0 4px;font-weight:600}
+.sub{color:var(--mut);font-size:13px;margin-bottom:14px}
+.big{font-size:44px;font-weight:700;letter-spacing:-1px;margin:6px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+td:first-child,th:first-child{text-align:left}
+th{color:var(--mut);font-weight:500;font-size:13px}
+.up{color:var(--up)}.dn{color:var(--dn)}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row .card{flex:1 1 140px;margin:0}
+.k{color:var(--mut);font-size:12px}
+.v{font-size:20px;font-weight:600}
+.foot{color:var(--mut);font-size:12px;margin-top:10px}
+input{background:#0f1115;color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:4px 6px;width:110px;font-size:14px}
+label{font-size:13px;color:var(--mut)}
+#err{color:var(--dn);font-size:13px}
+</style>
+</head>
+<body>
+<h1>BTC กำไรลอย</h1>
+<div class="sub">ราคาจาก Kraken BTC/USD (bid) รีเฟรชทุก <span id="iv">10</span> วินาที · เวลาเครื่องคุณ</div>
+
+<div class="card">
+  <div class="k">กำไรลอยรวม 2 ไม้</div>
+  <div class="big" id="total">—</div>
+  <div class="k">Kraken bid <b id="bid">—</b> · อัปเดต <span id="t">—</span> · <span id="err"></span></div>
+</div>
+
+<div class="card">
+<table>
+<thead><tr><th>ไม้</th><th>ล็อต</th><th>ราคาเข้า</th><th>กำไรลอย</th><th>ถึง TP</th><th>ห่าง SL</th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+</div>
+
+<div class="row">
+  <div class="card"><div class="k">สูงสุดตั้งแต่เปิดหน้านี้</div><div class="v up" id="mx">—</div></div>
+  <div class="card"><div class="k">ต่ำสุดตั้งแต่เปิดหน้านี้</div><div class="v dn" id="mn">—</div></div>
+  <div class="card"><div class="k">bid สูงสุด / ต่ำสุด</div><div class="v" id="bidr">—</div></div>
+</div>
+
+<div class="card">
+  <div class="k" style="margin-bottom:6px">ไม้ (แก้ได้ถ้าเปลี่ยน)</div>
+  <label>ไม้ 1 ล็อต <input id="l1"></label>
+  <label>ราคา <input id="p1"></label>
+  <label>SL <input id="s1"></label>
+  <label>TP <input id="t1"></label><br>
+  <label>ไม้ 2 ล็อต <input id="l2"></label>
+  <label>ราคา <input id="p2"></label>
+  <label>SL <input id="s2"></label>
+  <label>TP <input id="t2"></label>
+  <div class="k" style="margin-top:6px">ค่าจะถูกจำไว้ในเบราว์เซอร์เครื่องนี้ (ไม่ส่งไปไหน) · ใส่ล็อต 0 = ไม่นับไม้นั้น</div>
+</div>
+<div class="foot">หมายเหตุ: ราคา Kraken ต่างจาก bid ของ IUX ได้เล็กน้อย (spread/feed) ตัวเลขนี้เป็นค่าประมาณเชิงเลขคณิต ไม่ใช่คำแนะนำการลงทุน · กราฟ TradingView BTCUSD ใช้ราคาจาก exchange กลุ่มเดียวกัน</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const IDS=['l1','p1','s1','t1','l2','p2','s2','t2'];
+(function init(){
+  let saved={}; try{saved=JSON.parse(localStorage.getItem('btc_float')||'{}')}catch(e){}
+  const h=new URLSearchParams(location.hash.replace(/^#/,''));
+  IDS.forEach(k=>{ const v=h.get(k)??saved[k]; if(v!==undefined&&v!==null) $(k).value=v; });
+  if([...h.keys()].length){ try{history.replaceState(null,'',location.pathname+location.search)}catch(e){} }
+  IDS.forEach(k=>$(k).addEventListener('input',()=>{ const o={}; IDS.forEach(j=>o[j]=$(j).value); try{localStorage.setItem('btc_float',JSON.stringify(o))}catch(e){} mx=mn=bmx=bmn=null; tick(); }));
+})();
+let mx=null,mn=null,bmx=null,bmn=null;
+const f2=x=>(x>=0?'+':'')+x.toFixed(2);
+const cls=x=>x>=0?'up':'dn';
+function num(id){return parseFloat($(id).value)||0}
+async function tick(){
+  try{
+    const r=await fetch('https://api.kraken.com/0/public/Ticker?pair=XBTUSD&_='+Date.now(),{cache:'no-store'});
+    const j=await r.json();
+    const k=Object.keys(j.result)[0]; const bid=parseFloat(j.result[k].b[0]);
+    const pos=[[num('l1'),num('p1'),num('s1'),num('t1')],[num('l2'),num('p2'),num('s2'),num('t2')]];
+    let tot=0, html='';
+    pos.forEach((p,i)=>{ if(p[0]<=0) return;
+      const pl=(bid-p[1])*p[0]; tot+=pl;
+      html+=`<tr><td>BUY ${i+1}</td><td>${p[0].toFixed(2)}</td><td>${p[1].toFixed(2)}</td><td class="${cls(pl)}"><b>${f2(pl)}</b></td><td>${(p[3]-bid).toFixed(1)}</td><td>${(bid-p[2]).toFixed(1)}</td></tr>`;
+    });
+    $('rows').innerHTML=html;
+    $('total').textContent=f2(tot)+' USD'; $('total').className='big '+cls(tot);
+    $('bid').textContent=bid.toFixed(1); $('t').textContent=new Date().toLocaleTimeString('th-TH'); $('err').textContent='';
+    mx=(mx===null)?tot:Math.max(mx,tot); mn=(mn===null)?tot:Math.min(mn,tot);
+    bmx=(bmx===null)?bid:Math.max(bmx,bid); bmn=(bmn===null)?bid:Math.min(bmn,bid);
+    $('mx').textContent=f2(mx); $('mn').textContent=f2(mn); $('bidr').textContent=bmx.toFixed(0)+' / '+bmn.toFixed(0);
+  }catch(e){ $('err').textContent='ดึงราคาไม่ได้: '+e.message; }
+}
+tick(); setInterval(tick,10000);
+</script>
+</body>
+</html>
