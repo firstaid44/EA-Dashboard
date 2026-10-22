@@ -116,6 +116,25 @@ h3.st .agec.q{color:var(--warn)}
 .scchip .mb i{position:absolute;top:0;bottom:0;border-radius:99px}
 .scchip .mb i.up{background:var(--good)}.scchip .mb i.dn{background:var(--bad)}
 .scchip.old{opacity:.55}
+/* v7.16 หน้าปัดไมล์ */
+.scchip .gauge{width:100%;max-width:150px;height:auto;display:block;margin:2px auto 0;overflow:visible}
+.scchip .g-trk{fill:none;stroke:var(--card3);stroke-linecap:round}
+.scchip .g-dn{fill:none;stroke:var(--bad);opacity:.85}
+.scchip .g-up{fill:none;stroke:var(--good);opacity:.85}
+.scchip .g-tk{stroke:var(--muted);stroke-width:.9;stroke-linecap:round}
+.scchip .g-tk.mj{stroke:var(--ink2);stroke-width:1.6}
+.scchip .g-lb{fill:var(--muted);font-size:8.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.scchip .g-ndl{transform-origin:50px 47px;transition:transform .7s cubic-bezier(.3,1.4,.5,1)}
+.scchip .g-ndl path{fill:var(--ink2)}
+.scchip .g-ndl.up path{fill:var(--good)}.scchip .g-ndl.dn path{fill:var(--bad)}
+.scchip .g-hub{fill:var(--card3);stroke:var(--ink2);stroke-width:1}
+.scchip .g-hub2{fill:var(--ink)}
+.scchip .g-num{font-size:21px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;fill:var(--ink2)}
+.scchip .g-num.up{fill:var(--good)}.scchip .g-num.dn{fill:var(--bad)}
+.scchip .g-nd{font-size:10px;font-weight:600;fill:var(--muted)}
+.scchip .g-axt{fill:var(--card3)}
+.scchip .g-ax{fill:var(--muted)}.scchip .g-ax.tr{fill:var(--warn)}
+.scchip.gz{gap:2px;padding:8px 4px 8px}
 /* v7.10 แผงคำสั่ง EA */
 /* v7.12 สถานะ EA (ล็อก / ติดตัวกรอง) */
 .strow{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}
@@ -348,7 +367,7 @@ svg text{font-family:var(--ff)}</style>
 </nav>
 </div>
 <script>(function(){
-var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="57a22fec40bfe82fef913918f2ddc7057bc712b1",CMD_PORT=0;
+var POLL_MS=30000,LIVE_FILE="https://raw.githubusercontent.com/firstaid44/ea-dashboard/data/live.enc",REMOTE=true,SHELL_VER="859db4e8c04b5fe40066bff30684f70cd20ee29d",CMD_PORT=8765;
 var K="eadash3",ST={p:"sc-home",c:"BOTH",s:"ALL",o:{},m:{},sc:{}};
 try{var _p=JSON.parse(sessionStorage.getItem(K)||"{}");for(var _k in _p)ST[_k]=_p[_k]}catch(e){}
 var _h=(location.hash||"").replace("#","");if(/^sc-(home|sum|not|sys)$/.test(_h)){ST.p=_h;ST.sc={};ST.o={};ST.m={}}
@@ -467,7 +486,7 @@ function setStale(P){var el=document.getElementById("stale");if(!el||!P||!P.ts)r
 el.textContent="";el.style.display="none"}
 function pollRemote(done){if(!PASS||BUSY){if(done)done();return}BUSY=true;var P;fetchPkg().then(function(pk){P=pk;if(P.ts===lastTs)throw {skip:1};
 if(KEYS&&KEYS.salt===P.salt&&KEYS.iter===P.iter)return KEYS;return deriveKeys(PASS,P.salt,P.iter).then(function(k){KEYS=k;return k})
-}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="57a22fec40bfe82fef913918f2ddc7057bc712b1"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
+}).then(function(k){return decryptPkg(P,k)}).then(function(D){lastTs=P.ts;showLogin(false);setMsg("");if(D.sv&&SHELL_VER&&SHELL_VER!=="859db4e8c04b5fe40066bff30684f70cd20ee29d"&&D.sv!==SHELL_VER&&location.search.indexOf("v="+D.sv.substr(0,10))<0){flash("มีหน้าเว็บเวอร์ชันใหม่ กำลังโหลด...");setTimeout(function(){location.replace(location.pathname+"?v="+D.sv.substr(0,10)+location.hash)},600);return}noteData(D);applyLive(D);setStale(P);paintConn()
 }).catch(function(e){if(e&&e.skip){CONN.err="";setStale(P);paintConn();return}var msg=String(e&&e.message||e);if(msg!=="bad-pass"&&msg!=="no-gzip")noteErr(msg);paintConn();
 if(msg==="bad-pass"){PASS=null;KEYS=null;try{localStorage.removeItem("ea_pass")}catch(x){}showLogin(true);setMsg("รหัสผ่านไม่ถูกต้อง",true)}
 else if(msg==="no-gzip"){showLogin(true);setMsg("เบราว์เซอร์นี้เก่าเกินไป (ไม่รองรับ DecompressionStream) กรุณาอัปเดต",true)}
